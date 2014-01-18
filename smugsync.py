@@ -6,7 +6,7 @@ Usage:
                                   [--from=folder_name]
                                   [--email=email_address]
                                   [--password=password]
-  smugsync.py list (--api-key=apy_key)
+  smugsync.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
   smugsync.py (-h | --help)
@@ -131,7 +131,6 @@ class SmugSync(object):
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='SmugSync 0.1')
-    print(arguments)
     smugsync = SmugSync(
         arguments['--api-key'],
         email=arguments['--email'],
