@@ -34,6 +34,10 @@ Usage:
   smugsync.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
+  smugsync.py create <album_name> --api-key=apy_key
+                                  [--privacy=(unlisted | public)]
+                                  [--email=email_address]
+                                  [--password=password]
   smugsync.py (-h | --help)
 ```
 
