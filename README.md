@@ -21,6 +21,8 @@ You only need the `Key` (no need for the `Secret`).
 
 ## Usage
 
+print usage info
+
 ```shell
 $ python smugsync.py
 
@@ -35,6 +37,8 @@ Usage:
   smugsync.py (-h | --help)
 ```
 
+list albums
+
 ```shell
 $ ./smugsync.py list --api-key=... --email=your@email.com
 Password:
@@ -42,17 +46,32 @@ available albums:
 My Album
 Another Album
 Sample Gallery
+```
 
+upload from current folder to 'My Album'
+
+```shell
 $ ./smugsync.py upload 'My Album' --api-key=... --email=your@email.com --password=yourpassword
 uploading ./IMG_123.jpg -> My Album
 uploading ./IMG_124.jpg -> My Album
 ...
 uploading ./IMG_999.jpg -> My Album
+```
 
+uploading again, this time specifying a source folder
+
+```shell
 $ ./smugsync.py upload 'My Album' --folder=/my_pics/ --api-key=... --email=your@email.com --password=yourpassword
 skipping image /my_pics/IMG_123.jpg (duplicate)
 skipping image /my_pics/IMG_124.jpg (duplicate)
 ...
+```
+
+creating a new album (will create under 'Other' category)
+
+```shell
+$ ./smugsync.py create 'New Album' --api-key=... --email=your@email.com --password=yourpassword
+unlisted album New Album created. URL: http://<your smugmug nickname>.smugmug.com/Other/New-Album/n-vH4ZF
 ```
 
 ## Duplicates

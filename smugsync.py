@@ -9,15 +9,22 @@ Usage:
   smugsync.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
+  smugsync.py create <album_name> --api-key=apy_key
+                                  [--privacy=(unlisted | public)]
+                                  [--email=email_address]
+                                  [--password=password]
   smugsync.py (-h | --help)
 
 Arguments:
   upload        uploads files to a smugmug album
   list          list album names on smugmug
+  create        create a new album
 
 Options:
   --api-key=api_key       your smugmug api key
   --from=folder_name      folder to upload from [default: .]
+  --privacy=(unlisted | public)
+                          album privacy settings [default: unlisted]
   --email=email_address   email address of your smugmug account
   --passwod=password      smugmug password
 
@@ -30,7 +37,7 @@ import hashlib
 import os
 import re
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff)$', re.IGNORECASE)
 
@@ -107,6 +114,22 @@ class SmugSync(object):
         except:
             return None
 
+    def _format_album_name(self, album_name):
+        return album_name[0].upper() + album_name[1:]
+
+    def get_album_info(self, album):
+        return self.smugmug.albums_getInfo(AlbumID=album['id'], AlbumKey=album['Key'])
+
+    def create_album(self, album_name, privacy='unlisted'):
+        public = (privacy == 'public')
+        album_name = self._format_album_name(album_name)
+        album = self.smugmug.albums_create(Title=album_name, Public=public)
+        album_info = self.get_album_info(album['Album'])
+        print('{0} album {1} created. URL: {2}'.format(
+            privacy,
+            album_name,
+            album_info['Album']['URL']))
+
     def get_images_from_folder(self, folder, img_filter=IMG_FILTER):
         matches = []
         for root, dirnames, filenames in os.walk(folder):
@@ -130,7 +153,7 @@ class SmugSync(object):
         return self.user_info
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='SmugSync 0.1')
+    arguments = docopt(__doc__, version='SmugSync 0.2')
     smugsync = SmugSync(
         arguments['--api-key'],
         email=arguments['--email'],
@@ -139,3 +162,5 @@ if __name__ == '__main__':
         smugsync.upload(arguments['--from'], arguments['<album_name>'])
     if arguments['list']:
         smugsync.list_albums()
+    if arguments['create']:
+        smugsync.create_album(arguments['<album_name>'], arguments['--privacy'])
