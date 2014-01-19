@@ -55,6 +55,14 @@ skipping image /my_pics/IMG_124.jpg (duplicate)
 ...
 ```
 
+## Duplicates
+
+smugsync tries to avoid uploading images that were already uploaded to smugmug. To do so, it relies on the MD5 signature, based on the actual content of the image. This is the most reliable way to detect two identical copies of any file. However, Smugmug appears to auto-rotate images once they are uploaded. In such cases, the MD5 signature will mismatch and duplicate images might still get created.
+
+A workaround for this problem, is to rotate all images *before* uploading. [More information about image rotation tools](http://how-to.wikia.com/wiki/How_to_auto-rotate_digital_photos_to_their_proper_orientation).
+
+On Linux, the best way to achieve this is using the `exifautotran` utility (on ubuntu run `sudo apt-get install libjpeg-turbo-progs`).
+
 ## Issues / Questions
 
 smugsync is still young and experimental. Feel free to open an issue on github to report any problems.
