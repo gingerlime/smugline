@@ -9,11 +9,15 @@ Usage:
   smugsync.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
+  smugsync.py clear_duplicates <album_name> --api-key=<apy_key>
+                                            [--email=email_address]
+                                            [--password=password]
   smugsync.py (-h | --help)
 
 Arguments:
-  upload        uploads files to a smugmug album
-  list          list album names on smugmug
+  upload            uploads files to a smugmug album
+  list              list album names on smugmug
+  clear_duplicates  finds duplicate images in album and deletes them
 
 Options:
   --api-key=api_key       your smugmug api key
@@ -59,11 +63,15 @@ class SmugSync(object):
             print('uploading {0} -> {1}'.format(image, album_name))
             self.upload_file(image, album)
 
-    def _get_md5_hashes_for_album(self, album):
+    def _get_remote_images(self, album, extras=None):
         remote_images = self.smugmug.images_get(
             AlbumID=album['id'],
             AlbumKey=album['Key'],
-            Extras='MD5Sum')
+            Extras=extras)
+        return remote_images
+
+    def _get_md5_hashes_for_album(self, album):
+        remote_images = self._get_remote_images(album, 'MD5Sum')
         md5_sums = [x['MD5Sum'] for x in remote_images['Album']['Images']]
         self.md5_sums[album['id']] = md5_sums
         return md5_sums
@@ -129,6 +137,21 @@ class SmugSync(object):
         self.nickname = self.user_info['Login']['User']['NickName']
         return self.user_info
 
+    def _delete_image(self, image):
+        print('deleting image {0} (md5: {1})'.format(image['FileName'],
+                                                    image['MD5Sum']))
+        self.smugmug.images_delete(ImageID=image['id'])
+
+    def clear_duplicates(self, album_name):
+        album = self.get_album_by_name(album_name)
+        remote_images = self._get_remote_images(album, 'MD5Sum,FileName')
+        md5_sums = []
+        for image in remote_images['Album']['Images']:
+            if image['MD5Sum'] in md5_sums:
+                self._delete_image(image)
+            md5_sums.append(image['MD5Sum'])
+
+
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='SmugSync 0.1')
     smugsync = SmugSync(
@@ -139,3 +162,5 @@ if __name__ == '__main__':
         smugsync.upload(arguments['--from'], arguments['<album_name>'])
     if arguments['list']:
         smugsync.list_albums()
+    if arguments['clear_duplicates']:
+        smugsync.clear_duplicates(arguments['<album_name>'])
