@@ -37,7 +37,7 @@ import hashlib
 import os
 import re
 
-__version__ = '0.2'
+__version__ = '0.2.1'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff)$', re.IGNORECASE)
 
@@ -59,7 +59,7 @@ class SmugSync(object):
         self.smugmug.images_upload(File=source_file, AlbumID=album_id)
 
     def upload(self, source_folder, album_name):
-        album = self.get_album_by_name(album_name)
+        album = self.get_or_create_album(album_name)
         images = self.get_images_from_folder(source_folder)
         images = self._remove_duplicates(images, album)
         for image in images:
@@ -105,6 +105,12 @@ class SmugSync(object):
             if album['Title']:
                 print(album['Title'])
 
+    def get_or_create_album(self, album_name):
+        album = self.get_album_by_name(album_name)
+        if album:
+            return album
+        return self.create_album(album_name)
+
     def get_album_by_name(self, album_name):
         albums = self.get_albums()
         try:
@@ -129,6 +135,7 @@ class SmugSync(object):
             privacy,
             album_name,
             album_info['Album']['URL']))
+        return album_info['Album']
 
     def get_images_from_folder(self, folder, img_filter=IMG_FILTER):
         matches = []
@@ -153,7 +160,7 @@ class SmugSync(object):
         return self.user_info
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='SmugSync 0.2')
+    arguments = docopt(__doc__, version='SmugSync 0.2.1')
     smugsync = SmugSync(
         arguments['--api-key'],
         email=arguments['--email'],
