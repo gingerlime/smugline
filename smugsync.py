@@ -4,6 +4,7 @@
 Usage:
   smugsync.py upload <album_name> --api-key=<apy_key>
                                   [--from=folder_name]
+                                  [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
   smugsync.py list --api-key=apy_key
@@ -23,6 +24,8 @@ Arguments:
 Options:
   --api-key=api_key       your smugmug api key
   --from=folder_name      folder to upload from [default: .]
+  --media=(videos | images | all)
+                          upload videos, images, or both [default: images]
   --privacy=(unlisted | public)
                           album privacy settings [default: unlisted]
   --email=email_address   email address of your smugmug account
@@ -37,9 +40,11 @@ import hashlib
 import os
 import re
 
-__version__ = '0.2.1'
+__version__ = '0.3'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff)$', re.IGNORECASE)
+VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi)$', re.IGNORECASE)
+ALL_FILTER = re.compile('|'.join([IMG_FILTER.pattern, VIDEO_FILTER.pattern]))
 
 
 class SmugSync(object):
@@ -54,13 +59,21 @@ class SmugSync(object):
         self.login()
         self.md5_sums = {}
 
+    def get_filter(self, media_type='images'):
+        if media_type == 'videos':
+            return VIDEO_FILTER
+        if media_type == 'images':
+            return IMG_FILTER
+        if media_type == 'all':
+            return ALL_FILTER
+
     def upload_file(self, source_file, album):
         album_id = album['id']
         self.smugmug.images_upload(File=source_file, AlbumID=album_id)
 
-    def upload(self, source_folder, album_name):
+    def upload(self, source_folder, album_name, file_filter=IMG_FILTER):
         album = self.get_or_create_album(album_name)
-        images = self.get_images_from_folder(source_folder)
+        images = self.get_images_from_folder(source_folder, file_filter)
         images = self._remove_duplicates(images, album)
         for image in images:
             print('uploading {0} -> {1}'.format(image, album_name))
@@ -87,7 +100,7 @@ class SmugSync(object):
 
     def _include_file(self, f, md5_sums):
         if self._file_md5(f) in md5_sums:
-            print('skipping image {0} (duplicate)'.format(f))
+            print('skipping {0} (duplicate)'.format(f))
             return False
         return True
 
@@ -160,13 +173,16 @@ class SmugSync(object):
         return self.user_info
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='SmugSync 0.2.1')
+    arguments = docopt(__doc__, version='SmugSync 0.3')
     smugsync = SmugSync(
         arguments['--api-key'],
         email=arguments['--email'],
         password=arguments['--password'])
     if arguments['upload']:
-        smugsync.upload(arguments['--from'], arguments['<album_name>'])
+        file_filter = smugsync.get_filter(arguments['--media'])
+        smugsync.upload(arguments['--from'],
+                        arguments['<album_name>'],
+                        file_filter)
     if arguments['list']:
         smugsync.list_albums()
     if arguments['create']:

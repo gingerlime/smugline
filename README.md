@@ -18,17 +18,20 @@ You only need the `Key` (no need for the `Secret`).
 * listing albums on your smugmug account
 * uploading from a folder (recursively) to an album on smugmug
 * existing images will be uploaded only once (skipping duplicates)
+* uploading images, videos or both (default: images)
 
 ## Usage
 
 print usage info
 
 ```shell
-$ python smugsync.py
+$ python smugsync.py -h
+
 
 Usage:
   smugsync.py upload <album_name> --api-key=<apy_key>
                                   [--from=folder_name]
+                                  [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
   smugsync.py list --api-key=apy_key
@@ -39,6 +42,21 @@ Usage:
                                   [--email=email_address]
                                   [--password=password]
   smugsync.py (-h | --help)
+
+Arguments:
+  upload        uploads files to a smugmug album
+  list          list album names on smugmug
+  create        create a new album
+
+Options:
+  --api-key=api_key       your smugmug api key
+  --from=folder_name      folder to upload from [default: .]
+  --media=(videos | images | all)
+                          upload videos, images, or both [default: images]
+  --privacy=(unlisted | public)
+                          album privacy settings [default: unlisted]
+  --email=email_address   email address of your smugmug account
+  --passwod=password      smugmug password
 ```
 
 list albums
@@ -76,6 +94,15 @@ creating a new album (will create under 'Other' category)
 ```shell
 $ ./smugsync.py create 'New Album' --api-key=... --email=your@email.com --password=yourpassword
 unlisted album New Album created. URL: http://<your smugmug nickname>.smugmug.com/Other/New-Album/n-vH4ZF
+```
+
+uploading videos only
+```shell
+$ ./smugsync.py upload 'My Album' --api-key=... --email=your@email.com --password=yourpassword --media=videos
+uploading ./MOV_123.MOV -> My Album
+uploading ./MOV_124.mp4 -> My Album
+...
+uploading ./MOV_999.avi -> My Album
 ```
 
 ## Duplicates
