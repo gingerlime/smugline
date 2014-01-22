@@ -27,7 +27,6 @@ print usage info
 ```shell
 $ python smugsync.py -h
 
-
 Usage:
   smugsync.py upload <album_name> --api-key=<apy_key>
                                   [--from=folder_name]
