@@ -1,4 +1,4 @@
-# smugsync
+# smugline
 a simple command line tool for smugmug (using [smugpy](https://github.com/chrishoffman/smugpy)).
 Written in python 2.7
 
@@ -26,25 +26,25 @@ You only need the `Key` (no need for the `Secret`).
 print usage info
 
 ```shell
-$ python smugsync.py -h
+$ python smugline.py -h
 
 Usage:
-  smugsync.py upload <album_name> --api-key=<apy_key>
+  smugline.py upload <album_name> --api-key=<apy_key>
                                   [--from=folder_name]
                                   [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
-  smugsync.py list --api-key=apy_key
+  smugline.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
-  smugsync.py create <album_name> --api-key=apy_key
+  smugline.py create <album_name> --api-key=apy_key
                                   [--privacy=(unlisted | public)]
                                   [--email=email_address]
                                   [--password=password]
-  smugsync.py clear_duplicates <album_name> --api-key=<apy_key>
+  smugline.py clear_duplicates <album_name> --api-key=<apy_key>
                                             [--email=email_address]
                                             [--password=password]
-  smugsync.py (-h | --help)
+  smugline.py (-h | --help)
 
 Arguments:
   upload            uploads files to a smugmug album
@@ -66,7 +66,7 @@ Options:
 list albums
 
 ```shell
-$ ./smugsync.py list --api-key=... --email=your@email.com
+$ ./smugline.py list --api-key=... --email=your@email.com
 Password:
 available albums:
 My Album
@@ -77,7 +77,7 @@ Sample Gallery
 upload from current folder to 'My Album'
 
 ```shell
-$ ./smugsync.py upload 'My Album' --api-key=... --email=your@email.com --password=yourpassword
+$ ./smugline.py upload 'My Album' --api-key=... --email=your@email.com --password=yourpassword
 uploading ./IMG_123.jpg -> My Album
 uploading ./IMG_124.jpg -> My Album
 ...
@@ -87,7 +87,7 @@ uploading ./IMG_999.jpg -> My Album
 uploading again, this time specifying a source folder
 
 ```shell
-$ ./smugsync.py upload 'My Album' --folder=/my_pics/ --api-key=... --email=your@email.com --password=yourpassword
+$ ./smugline.py upload 'My Album' --folder=/my_pics/ --api-key=... --email=your@email.com --password=yourpassword
 skipping image /my_pics/IMG_123.jpg (duplicate)
 skipping image /my_pics/IMG_124.jpg (duplicate)
 ...
@@ -96,13 +96,13 @@ skipping image /my_pics/IMG_124.jpg (duplicate)
 creating a new album (will create under 'Other' category)
 
 ```shell
-$ ./smugsync.py create 'New Album' --api-key=... --email=your@email.com --password=yourpassword
+$ ./smugline.py create 'New Album' --api-key=... --email=your@email.com --password=yourpassword
 unlisted album New Album created. URL: http://<your smugmug nickname>.smugmug.com/Other/New-Album/n-vH4ZF
 ```
 
 uploading videos only
 ```shell
-$ ./smugsync.py upload 'My Album' --api-key=... --email=your@email.com --password=yourpassword --media=videos
+$ ./smugline.py upload 'My Album' --api-key=... --email=your@email.com --password=yourpassword --media=videos
 uploading ./MOV_123.MOV -> My Album
 uploading ./MOV_124.mp4 -> My Album
 ...
@@ -111,14 +111,14 @@ uploading ./MOV_999.avi -> My Album
 
 clearing duplicate images or videos in 'My Album'
 ```shell
-$ ./smugsync.py clear_duplicates 'My Album' --api-key=... --email=your@email.com --password=yourpassword
+$ ./smugline.py clear_duplicates 'My Album' --api-key=... --email=your@email.com --password=yourpassword
 deleting image IMG_1234.JPG (md5: d429a9d0bf0829082985cb6941f6a547)
 ...
 ```
 
 ## Duplicates
 
-smugsync tries to avoid uploading images that were already uploaded to smugmug. To do so, it relies on the MD5 signature, based on the actual content of the image. This is the most reliable way to detect two identical copies of any file. However, Smugmug appears to auto-rotate images once they are uploaded. In such cases, the MD5 signature will mismatch and duplicate images might still get created.
+smugline tries to avoid uploading images that were already uploaded to smugmug. To do so, it relies on the MD5 signature, based on the actual content of the image. This is the most reliable way to detect two identical copies of any file. However, Smugmug appears to auto-rotate images once they are uploaded. In such cases, the MD5 signature will mismatch and duplicate images might still get created.
 
 A workaround for this problem, is to rotate all images *before* uploading. [More information about image rotation tools](http://how-to.wikia.com/wiki/How_to_auto-rotate_digital_photos_to_their_proper_orientation).
 
@@ -132,12 +132,12 @@ copy. It won't detect any changes to metadata (caption, comments etc), so use wi
 
 ## Issues / Questions
 
-smugsync is still young and experimental. Feel free to open an issue on github to report any problems.
-Code contributions are most welcome to extend and improve smugsync
+smugline is still young and experimental. Feel free to open an issue on github to report any problems.
+Code contributions are most welcome to extend and improve smugline
 
 ## License
 
-smugsync is distributed under the MIT license. All 3rd party libraries and components are distributed under their
+smugline is distributed under the MIT license. All 3rd party libraries and components are distributed under their
 respective license terms.
 
 

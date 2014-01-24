@@ -1,23 +1,23 @@
 #!/usr/bin/env python
-"""smugsync
+"""smugline - command line tool for SmugMug
 
 Usage:
-  smugsync.py upload <album_name> --api-key=<apy_key>
+  smugline.py upload <album_name> --api-key=<apy_key>
                                   [--from=folder_name]
                                   [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
-  smugsync.py list --api-key=apy_key
+  smugline.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
-  smugsync.py create <album_name> --api-key=apy_key
+  smugline.py create <album_name> --api-key=apy_key
                                   [--privacy=(unlisted | public)]
                                   [--email=email_address]
                                   [--password=password]
-  smugsync.py clear_duplicates <album_name> --api-key=<apy_key>
+  smugline.py clear_duplicates <album_name> --api-key=<apy_key>
                                             [--email=email_address]
                                             [--password=password]
-  smugsync.py (-h | --help)
+  smugline.py (-h | --help)
 
 Arguments:
   upload            uploads files to a smugmug album
@@ -51,7 +51,7 @@ VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi)$', re.IGNORECASE)
 ALL_FILTER = re.compile('|'.join([IMG_FILTER.pattern, VIDEO_FILTER.pattern]))
 
 
-class SmugSync(object):
+class SmugLine(object):
     def __init__(self, api_key, email=None, password=None):
         self.api_key = api_key
         self.email = email
@@ -59,7 +59,7 @@ class SmugSync(object):
         self.smugmug = SmugMug(
             api_key=api_key,
             api_version="1.2.2",
-            app_name="SmugSync")
+            app_name="SmugLine")
         self.login()
         self.md5_sums = {}
 
@@ -196,19 +196,19 @@ class SmugSync(object):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='SmugSync 0.4')
-    smugsync = SmugSync(
+    arguments = docopt(__doc__, version='SmugLine 0.4')
+    smugline = SmugLine(
         arguments['--api-key'],
         email=arguments['--email'],
         password=arguments['--password'])
     if arguments['upload']:
-        file_filter = smugsync.get_filter(arguments['--media'])
-        smugsync.upload(arguments['--from'],
+        file_filter = smugline.get_filter(arguments['--media'])
+        smugline.upload(arguments['--from'],
                         arguments['<album_name>'],
                         file_filter)
     if arguments['list']:
-        smugsync.list_albums()
+        smugline.list_albums()
     if arguments['create']:
-        smugsync.create_album(arguments['<album_name>'], arguments['--privacy'])
+        smugline.create_album(arguments['<album_name>'], arguments['--privacy'])
     if arguments['clear_duplicates']:
-        smugsync.clear_duplicates(arguments['<album_name>'])
+        smugline.clear_duplicates(arguments['<album_name>'])
