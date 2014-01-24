@@ -4,11 +4,16 @@
 Usage:
   smugsync.py upload <album_name> --api-key=<apy_key>
                                   [--from=folder_name]
+                                  [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
   smugsync.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
+  smugsync.py create <album_name> --api-key=apy_key
+                                  [--privacy=(unlisted | public)]
+                                  [--email=email_address]
+                                  [--password=password]
   smugsync.py clear_duplicates <album_name> --api-key=<apy_key>
                                             [--email=email_address]
                                             [--password=password]
@@ -17,11 +22,16 @@ Usage:
 Arguments:
   upload            uploads files to a smugmug album
   list              list album names on smugmug
+  create            create a new album
   clear_duplicates  finds duplicate images in album and deletes them
 
 Options:
   --api-key=api_key       your smugmug api key
   --from=folder_name      folder to upload from [default: .]
+  --media=(videos | images | all)
+                          upload videos, images, or both [default: images]
+  --privacy=(unlisted | public)
+                          album privacy settings [default: unlisted]
   --email=email_address   email address of your smugmug account
   --passwod=password      smugmug password
 
@@ -34,9 +44,11 @@ import hashlib
 import os
 import re
 
-__version__ = '0.1'
+__version__ = '0.4'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff)$', re.IGNORECASE)
+VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi)$', re.IGNORECASE)
+ALL_FILTER = re.compile('|'.join([IMG_FILTER.pattern, VIDEO_FILTER.pattern]))
 
 
 class SmugSync(object):
@@ -51,13 +63,21 @@ class SmugSync(object):
         self.login()
         self.md5_sums = {}
 
+    def get_filter(self, media_type='images'):
+        if media_type == 'videos':
+            return VIDEO_FILTER
+        if media_type == 'images':
+            return IMG_FILTER
+        if media_type == 'all':
+            return ALL_FILTER
+
     def upload_file(self, source_file, album):
         album_id = album['id']
         self.smugmug.images_upload(File=source_file, AlbumID=album_id)
 
-    def upload(self, source_folder, album_name):
-        album = self.get_album_by_name(album_name)
-        images = self.get_images_from_folder(source_folder)
+    def upload(self, source_folder, album_name, file_filter=IMG_FILTER):
+        album = self.get_or_create_album(album_name)
+        images = self.get_images_from_folder(source_folder, file_filter)
         images = self._remove_duplicates(images, album)
         for image in images:
             print('uploading {0} -> {1}'.format(image, album_name))
@@ -88,7 +108,7 @@ class SmugSync(object):
 
     def _include_file(self, f, md5_sums):
         if self._file_md5(f) in md5_sums:
-            print('skipping image {0} (duplicate)'.format(f))
+            print('skipping {0} (duplicate)'.format(f))
             return False
         return True
 
@@ -106,6 +126,12 @@ class SmugSync(object):
             if album['Title']:
                 print(album['Title'])
 
+    def get_or_create_album(self, album_name):
+        album = self.get_album_by_name(album_name)
+        if album:
+            return album
+        return self.create_album(album_name)
+
     def get_album_by_name(self, album_name):
         albums = self.get_albums()
         try:
@@ -114,6 +140,23 @@ class SmugSync(object):
             return matches[0]
         except:
             return None
+
+    def _format_album_name(self, album_name):
+        return album_name[0].upper() + album_name[1:]
+
+    def get_album_info(self, album):
+        return self.smugmug.albums_getInfo(AlbumID=album['id'], AlbumKey=album['Key'])
+
+    def create_album(self, album_name, privacy='unlisted'):
+        public = (privacy == 'public')
+        album_name = self._format_album_name(album_name)
+        album = self.smugmug.albums_create(Title=album_name, Public=public)
+        album_info = self.get_album_info(album['Album'])
+        print('{0} album {1} created. URL: {2}'.format(
+            privacy,
+            album_name,
+            album_info['Album']['URL']))
+        return album_info['Album']
 
     def get_images_from_folder(self, folder, img_filter=IMG_FILTER):
         matches = []
@@ -153,14 +196,19 @@ class SmugSync(object):
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='SmugSync 0.1')
+    arguments = docopt(__doc__, version='SmugSync 0.4')
     smugsync = SmugSync(
         arguments['--api-key'],
         email=arguments['--email'],
         password=arguments['--password'])
     if arguments['upload']:
-        smugsync.upload(arguments['--from'], arguments['<album_name>'])
+        file_filter = smugsync.get_filter(arguments['--media'])
+        smugsync.upload(arguments['--from'],
+                        arguments['<album_name>'],
+                        file_filter)
     if arguments['list']:
         smugsync.list_albums()
+    if arguments['create']:
+        smugsync.create_album(arguments['<album_name>'], arguments['--privacy'])
     if arguments['clear_duplicates']:
         smugsync.clear_duplicates(arguments['<album_name>'])

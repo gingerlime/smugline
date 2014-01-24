@@ -18,22 +18,52 @@ You only need the `Key` (no need for the `Secret`).
 * listing albums on your smugmug account
 * uploading from a folder (recursively) to an album on smugmug
 * existing images will be uploaded only once (skipping duplicates)
+* uploading images, videos or both (default: images)
+* clearing duplicate images or video from an album
 
 ## Usage
 
+print usage info
+
 ```shell
-$ python smugsync.py
+$ python smugsync.py -h
 
 Usage:
   smugsync.py upload <album_name> --api-key=<apy_key>
                                   [--from=folder_name]
+                                  [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
   smugsync.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
+  smugsync.py create <album_name> --api-key=apy_key
+                                  [--privacy=(unlisted | public)]
+                                  [--email=email_address]
+                                  [--password=password]
+  smugsync.py clear_duplicates <album_name> --api-key=<apy_key>
+                                            [--email=email_address]
+                                            [--password=password]
   smugsync.py (-h | --help)
+
+Arguments:
+  upload            uploads files to a smugmug album
+  list              list album names on smugmug
+  create            create a new album
+  clear_duplicates  finds duplicate images in album and deletes them
+
+Options:
+  --api-key=api_key       your smugmug api key
+  --from=folder_name      folder to upload from [default: .]
+  --media=(videos | images | all)
+                          upload videos, images, or both [default: images]
+  --privacy=(unlisted | public)
+                          album privacy settings [default: unlisted]
+  --email=email_address   email address of your smugmug account
+  --passwod=password      smugmug password
 ```
+
+list albums
 
 ```shell
 $ ./smugsync.py list --api-key=... --email=your@email.com
@@ -42,16 +72,47 @@ available albums:
 My Album
 Another Album
 Sample Gallery
+```
 
+upload from current folder to 'My Album'
+
+```shell
 $ ./smugsync.py upload 'My Album' --api-key=... --email=your@email.com --password=yourpassword
 uploading ./IMG_123.jpg -> My Album
 uploading ./IMG_124.jpg -> My Album
 ...
 uploading ./IMG_999.jpg -> My Album
+```
 
+uploading again, this time specifying a source folder
+
+```shell
 $ ./smugsync.py upload 'My Album' --folder=/my_pics/ --api-key=... --email=your@email.com --password=yourpassword
 skipping image /my_pics/IMG_123.jpg (duplicate)
 skipping image /my_pics/IMG_124.jpg (duplicate)
+...
+```
+
+creating a new album (will create under 'Other' category)
+
+```shell
+$ ./smugsync.py create 'New Album' --api-key=... --email=your@email.com --password=yourpassword
+unlisted album New Album created. URL: http://<your smugmug nickname>.smugmug.com/Other/New-Album/n-vH4ZF
+```
+
+uploading videos only
+```shell
+$ ./smugsync.py upload 'My Album' --api-key=... --email=your@email.com --password=yourpassword --media=videos
+uploading ./MOV_123.MOV -> My Album
+uploading ./MOV_124.mp4 -> My Album
+...
+uploading ./MOV_999.avi -> My Album
+```
+
+clearing duplicate images or videos in 'My Album'
+```shell
+$ ./smugsync.py clear_duplicates 'My Album' --api-key=... --email=your@email.com --password=yourpassword
+deleting image IMG_1234.JPG (md5: d429a9d0bf0829082985cb6941f6a547)
 ...
 ```
 
@@ -62,6 +123,12 @@ smugsync tries to avoid uploading images that were already uploaded to smugmug. 
 A workaround for this problem, is to rotate all images *before* uploading. [More information about image rotation tools](http://how-to.wikia.com/wiki/How_to_auto-rotate_digital_photos_to_their_proper_orientation).
 
 On Linux, the best way to achieve this is using the `exifautotran` utility (on ubuntu run `sudo apt-get install libjpeg-turbo-progs`).
+
+### Clearing duplicates
+
+the `clear_duplicates` command will search for items in an album with identical MD5 signature, and will keep only one
+copy. It won't detect any changes to metadata (caption, comments etc), so use with care!
+
 
 ## Issues / Questions
 
