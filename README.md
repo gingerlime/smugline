@@ -35,6 +35,10 @@ Usage:
                                   [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
+  smugline.py process <json_file> --api-key=<apy_key>
+                                  [--from=folder_name]
+                                  [--email=email_address]
+                                  [--password=password]
   smugline.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
@@ -92,6 +96,27 @@ $ ./smugline.py upload 'My Album' --folder=/my_pics/ --api-key=... --email=your@
 skipping image /my_pics/IMG_123.jpg (duplicate)
 skipping image /my_pics/IMG_124.jpg (duplicate)
 ...
+```
+
+uploading files described in a json file
+
+```shell
+$ ./smugline.py process images.json --folder=/my_pics/ --api-key=... --email=your@email.com --password=yourpassword
+```
+
+where images.json (utf8 encoding) contain
+
+```json
+[
+{
+"AlbumName": "Birds",
+"Caption": "Toco Toucan",
+"File": "birds/toco_toucan.jpg",
+"Keywords": "birds; animals",
+"Title": "Toucan"
+},
+...
+]
 ```
 
 creating a new album (will create under 'Other' category)
