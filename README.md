@@ -1,6 +1,7 @@
-# smugline
+# smugline [![Build Status](https://secure.travis-ci.org/gingerlime/smugline.png?branch=master)](http://travis-ci.org/gingerlime/smugline)
+
 a simple command line tool for smugmug (using [smugpy](https://github.com/chrishoffman/smugpy)).
-Written in python 2.7
+Written in python 2.x/3.x
 
 ## Installation
 

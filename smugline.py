@@ -167,8 +167,14 @@ class SmugLine(object):
         return matches
 
     def _set_email_and_password(self):
+        # for python2
+        try:
+            input = raw_input
+        except NameError:
+            pass
+
         if self.email is None:
-            self.email = raw_input('Email address: ')
+            self.email = input('Email address: ')
         if self.password is None:
             self.password = getpass.getpass()
 
