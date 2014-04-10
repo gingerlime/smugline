@@ -136,7 +136,7 @@ class SmugLine(object):
         albums = self.get_albums()
         try:
             matches = [x for x in albums['Albums'] \
-                       if x.get('Title') == album_name]
+                       if x.get('Title').lower() == album_name.lower()]
             return matches[0]
         except:
             return None
