@@ -7,6 +7,10 @@ Usage:
                                   [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
+  smugline.py process <json_file> --api-key=<apy_key>
+                                  [--from=folder_name]
+                                  [--email=email_address]
+                                  [--password=password]
   smugline.py list --api-key=apy_key
                    [--email=email_address]
                    [--password=password]
@@ -43,6 +47,8 @@ import getpass
 import hashlib
 import os
 import re
+import json
+from itertools import groupby
 
 __version__ = '0.4'
 
@@ -71,17 +77,37 @@ class SmugLine(object):
         if media_type == 'all':
             return ALL_FILTER
 
-    def upload_file(self, source_file, album):
-        album_id = album['id']
-        self.smugmug.images_upload(File=source_file, AlbumID=album_id)
+    def upload_file(self, album, image):
+        self.smugmug.images_upload(AlbumID=album['id'], **image)
 
-    def upload(self, source_folder, album_name, file_filter=IMG_FILTER):
+    def upload_json(self, source_folder, json_file):
+        images = json.load(open(json_file))
+
+        # prepend folder
+        for image in images:
+            image['File'] = source_folder + image['File']
+
+        # group by album
+        groups = []
+        images.sort(key=lambda x: x['AlbumName'])
+        for k, g in groupby(images, key=lambda x: x['AlbumName']):
+            groups.append(list(g))
+
+        for group in groups:
+            album_name = group[0]['AlbumName']
+            album = self.get_or_create_album(album_name)
+            self._upload(group, album_name, album)
+
+    def upload_folder(self, source_folder, album_name, file_filter=IMG_FILTER):
         album = self.get_or_create_album(album_name)
         images = self.get_images_from_folder(source_folder, file_filter)
+        self._upload(images, album_name, album)
+
+    def _upload(self, images, album_name, album):
         images = self._remove_duplicates(images, album)
         for image in images:
             print('uploading {0} -> {1}'.format(image, album_name))
-            self.upload_file(image, album)
+            self.upload_file(album, image)
 
     def _get_remote_images(self, album, extras=None):
         remote_images = self.smugmug.images_get(
@@ -114,7 +140,7 @@ class SmugLine(object):
 
     def _remove_duplicates(self, images, album):
         md5_sums = self._get_md5_hashes_for_album(album)
-        return [x for x in images if self._include_file(x, md5_sums)]
+        return [x for x in images if self._include_file(x.get('File'), md5_sums)]
 
     def get_albums(self):
         albums = self.smugmug.albums_get(NickName=self.nickname)
@@ -162,7 +188,7 @@ class SmugLine(object):
         matches = []
         for root, dirnames, filenames in os.walk(folder):
             matches.extend(
-                os.path.join(root, name) for name in filenames \
+                {'File' : os.path.join(root, name)} for name in filenames \
                 if img_filter.match(name))
         return matches
 
@@ -209,9 +235,12 @@ if __name__ == '__main__':
         password=arguments['--password'])
     if arguments['upload']:
         file_filter = smugline.get_filter(arguments['--media'])
-        smugline.upload(arguments['--from'],
+        smugline.upload_folder(arguments['--from'],
                         arguments['<album_name>'],
                         file_filter)
+    if arguments['process']:
+        smugline.upload_json(arguments['--from'],
+                        arguments['<json_file>'])
     if arguments['list']:
         smugline.list_albums()
     if arguments['create']:
