@@ -25,6 +25,7 @@ Usage:
 
 Arguments:
   upload            uploads files to a smugmug album
+  process           processes a json file with upload directives
   list              list album names on smugmug
   create            create a new album
   clear_duplicates  finds duplicate images in album and deletes them
