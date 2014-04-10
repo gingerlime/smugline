@@ -98,7 +98,7 @@ class SmugLine(object):
 
     def _file_md5(self, filename, block_size=2**20):
         md5 = hashlib.md5()
-        f = open(filename)
+        f = open(filename, 'rb')
         while True:
             data = f.read(block_size)
             if not data:
