@@ -51,11 +51,12 @@ import re
 import json
 from itertools import groupby
 
-__version__ = '0.4'
+__version__ = '0.4.1'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff)$', re.IGNORECASE)
 VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi)$', re.IGNORECASE)
-ALL_FILTER = re.compile('|'.join([IMG_FILTER.pattern, VIDEO_FILTER.pattern]))
+ALL_FILTER = re.compile('|'.join([IMG_FILTER.pattern, VIDEO_FILTER.pattern]),
+                        re.IGNORECASE)
 
 
 class SmugLine(object):
