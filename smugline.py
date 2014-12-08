@@ -141,8 +141,9 @@ class SmugLine(object):
                 print('skipping {0} (duplicate)'.format(f))
                 return False
             return True
-        except IOError, e:
-            print(str(e) + '...skipping')
+        except IOError as err:
+            errno, strerror = err
+            print('I/O Error({0}): {1}...skipping'.format(errno, strerror))
             return False
 
     def _remove_duplicates(self, images, album):
