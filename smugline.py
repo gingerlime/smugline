@@ -51,7 +51,7 @@ import re
 import json
 from itertools import groupby
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff)$', re.IGNORECASE)
 VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi|mts)$', re.IGNORECASE)
@@ -135,10 +135,14 @@ class SmugLine(object):
         return md5.hexdigest()
 
     def _include_file(self, f, md5_sums):
-        if self._file_md5(f) in md5_sums:
-            print('skipping {0} (duplicate)'.format(f))
+        try:
+            if self._file_md5(f) in md5_sums:
+                print('skipping {0} (duplicate)'.format(f))
+                return False
+            return True
+        except IOError, e:
+            print(str(e) + '...skipping')
             return False
-        return True
 
     def _remove_duplicates(self, images, album):
         md5_sums = self._get_md5_hashes_for_album(album)
