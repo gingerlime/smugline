@@ -54,7 +54,7 @@ from itertools import groupby
 __version__ = '0.4.1'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff)$', re.IGNORECASE)
-VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi)$', re.IGNORECASE)
+VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi|mts)$', re.IGNORECASE)
 ALL_FILTER = re.compile('|'.join([IMG_FILTER.pattern, VIDEO_FILTER.pattern]),
                         re.IGNORECASE)
 
