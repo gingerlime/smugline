@@ -42,6 +42,7 @@ Options:
 
 """
 
+# pylint: disable=print-statement
 from docopt import docopt
 from smugpy import SmugMug
 import getpass
