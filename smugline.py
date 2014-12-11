@@ -7,6 +7,11 @@ Usage:
                                   [--media=(videos | images | all)]
                                   [--email=email_address]
                                   [--password=password]
+  smugline.py download <album_name> --api-key=<apy_key>
+                                    [--to=folder_name]
+                                    [--media=(videos | images | all)]
+                                    [--email=email_address]
+                                    [--password=password]
   smugline.py process <json_file> --api-key=<apy_key>
                                   [--from=folder_name]
                                   [--email=email_address]
@@ -25,6 +30,7 @@ Usage:
 
 Arguments:
   upload            uploads files to a smugmug album
+  download          downloads an entire album into a folder
   process           processes a json file with upload directives
   list              list album names on smugmug
   create            create a new album
@@ -50,9 +56,10 @@ import hashlib
 import os
 import re
 import json
+import requests
 from itertools import groupby
 
-__version__ = '0.4.2'
+__version__ = '0.5.0'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff)$', re.IGNORECASE)
 VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi|mts)$', re.IGNORECASE)
@@ -83,6 +90,20 @@ class SmugLine(object):
     def upload_file(self, album, image):
         self.smugmug.images_upload(AlbumID=album['id'], **image)
 
+    # source: http://stackoverflow.com/a/16696317/305019
+    def download_file(self, url, folder, filename=None):
+        local_filename = os.path.join(folder, filename or url.split('/')[-1])
+        if os.path.exists(local_filename):
+            print('{0} already exists...skipping'.format(local_filename))
+            return
+        r = requests.get(url, stream=True)
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk: # filter out keep-alive new chunks
+                    f.write(chunk)
+                    f.flush()
+        return local_filename
+
     def upload_json(self, source_folder, json_file):
         images = json.load(open(json_file))
 
@@ -106,11 +127,24 @@ class SmugLine(object):
         images = self.get_images_from_folder(source_folder, file_filter)
         self._upload(images, album_name, album)
 
+    def download_album(self, album_name, dest_folder, file_filter=IMG_FILTER):
+        album = self.get_album_by_name(album_name)
+        if album is None:
+            print('Album {0} not found'.format(album_name))
+            return
+        images = self._get_images_for_album(album, file_filter)
+        self._download(images, dest_folder)
+
     def _upload(self, images, album_name, album):
         images = self._remove_duplicates(images, album)
         for image in images:
             print('uploading {0} -> {1}'.format(image, album_name))
             self.upload_file(album, image)
+
+    def _download(self, images, dest_folder):
+        for img in images:
+            print('downloading {0} -> {1}'.format(img['FileName'], dest_folder))
+            self.download_file(img['OriginalURL'], dest_folder, img['FileName'])
 
     def _get_remote_images(self, album, extras=None):
         remote_images = self.smugmug.images_get(
@@ -124,6 +158,14 @@ class SmugLine(object):
         md5_sums = [x['MD5Sum'] for x in remote_images['Album']['Images']]
         self.md5_sums[album['id']] = md5_sums
         return md5_sums
+
+    def _get_images_for_album(self, album, file_filter=IMG_FILTER):
+        extras = 'FileName,OriginalURL'
+        images = self._get_remote_images(album, extras)['Album']['Images']
+
+        for image in [img for img in images \
+                    if file_filter.match(img['FileName'])]:
+            yield image
 
     def _file_md5(self, filename, block_size=2**20):
         md5 = hashlib.md5()
@@ -196,7 +238,7 @@ class SmugLine(object):
         matches = []
         for root, dirnames, filenames in os.walk(folder):
             matches.extend(
-                {'File' : os.path.join(root, name)} for name in filenames \
+                {'File': os.path.join(root, name)} for name in filenames \
                 if img_filter.match(name))
         return matches
 
@@ -245,6 +287,11 @@ if __name__ == '__main__':
         file_filter = smugline.get_filter(arguments['--media'])
         smugline.upload_folder(arguments['--from'],
                         arguments['<album_name>'],
+                        file_filter)
+    if arguments['download']:
+        file_filter = smugline.get_filter(arguments['--media'])
+        smugline.download_album(arguments['<album_name>'],
+                        arguments['--to'],
                         file_filter)
     if arguments['process']:
         smugline.upload_json(arguments['--from'],
