@@ -57,6 +57,7 @@ import os
 import re
 import json
 import requests
+import time
 from itertools import groupby
 
 __version__ = '0.5.1'
@@ -91,7 +92,7 @@ class SmugLine(object):
         self.smugmug.images_upload(AlbumID=album['id'], **image)
 
     # source: http://stackoverflow.com/a/16696317/305019
-    def download_file(self, url, folder, filename=None):
+    def download_file(self, url, folder, image, filename=None):
         local_filename = os.path.join(folder, filename or url.split('/')[-1])
         if os.path.exists(local_filename):
             print('{0} already exists...skipping'.format(local_filename))
@@ -102,6 +103,13 @@ class SmugLine(object):
                 if chunk: # filter out keep-alive new chunks
                     f.write(chunk)
                     f.flush()
+
+        # apply the image date
+        image_info = self.get_image_info(image)
+        timestamp = time.strptime(image_info['Image']['Date'], '%Y-%m-%d %H:%M:%S')
+        t = time.mktime(timestamp)
+        os.utime(local_filename, (t,t))
+
         return local_filename
 
     def upload_json(self, source_folder, json_file):
@@ -144,7 +152,7 @@ class SmugLine(object):
     def _download(self, images, dest_folder):
         for img in images:
             print('downloading {0} -> {1}'.format(img['FileName'], dest_folder))
-            self.download_file(img['OriginalURL'], dest_folder, img['FileName'])
+            self.download_file(img['OriginalURL'], dest_folder, img, img['FileName'])
 
     def _get_remote_images(self, album, extras=None):
         remote_images = self.smugmug.images_get(
@@ -222,6 +230,9 @@ class SmugLine(object):
 
     def get_album_info(self, album):
         return self.smugmug.albums_getInfo(AlbumID=album['id'], AlbumKey=album['Key'])
+
+    def get_image_info(self, image):
+        return self.smugmug.images_getInfo(ImageKey=image['Key'])
 
     def create_album(self, album_name, privacy='unlisted'):
         public = (privacy == 'public')
