@@ -60,7 +60,7 @@ import requests
 import time
 from itertools import groupby
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff|gif)$', re.IGNORECASE)
 VIDEO_FILTER = re.compile(r'.+\.(mov|mp4|avi|mts)$', re.IGNORECASE)
@@ -92,7 +92,7 @@ class SmugLine(object):
         self.smugmug.images_upload(AlbumID=album['id'], **image)
 
     # source: http://stackoverflow.com/a/16696317/305019
-    def download_file(self, url, folder, image, filename=None):
+    def download_file(self, url, folder, filename=None):
         local_filename = os.path.join(folder, filename or url.split('/')[-1])
         if os.path.exists(local_filename):
             print('{0} already exists...skipping'.format(local_filename))
@@ -104,13 +104,14 @@ class SmugLine(object):
                     f.write(chunk)
                     f.flush()
 
+        return local_filename
+
+    def set_file_timestamp(self, filename, image):
         # apply the image date
         image_info = self.get_image_info(image)
         timestamp = time.strptime(image_info['Image']['Date'], '%Y-%m-%d %H:%M:%S')
         t = time.mktime(timestamp)
-        os.utime(local_filename, (t,t))
-
-        return local_filename
+        os.utime(filename, (t, t))
 
     def upload_json(self, source_folder, json_file):
         images = json.load(open(json_file))
@@ -152,7 +153,8 @@ class SmugLine(object):
     def _download(self, images, dest_folder):
         for img in images:
             print('downloading {0} -> {1}'.format(img['FileName'], dest_folder))
-            self.download_file(img['OriginalURL'], dest_folder, img, img['FileName'])
+            filename = self.download_file(img['OriginalURL'], dest_folder, img['FileName'])
+            self.set_file_timestamp(filename, img)
 
     def _get_remote_images(self, album, extras=None):
         remote_images = self.smugmug.images_get(
