@@ -107,6 +107,8 @@ class SmugLine(object):
         return local_filename
 
     def set_file_timestamp(self, filename, image):
+        if filename is None:
+            return
         # apply the image date
         image_info = self.get_image_info(image)
         timestamp = time.strptime(image_info['Image']['Date'], '%Y-%m-%d %H:%M:%S')
@@ -194,6 +196,8 @@ class SmugLine(object):
                 return False
             return True
         except IOError as err:
+            # see https://github.com/PyCQA/pylint/issues/165
+            # pylint: disable=unpacking-non-sequence
             errno, strerror = err
             print('I/O Error({0}): {1}...skipping'.format(errno, strerror))
             return False
