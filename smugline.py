@@ -196,6 +196,8 @@ class SmugLine(object):
                 return False
             return True
         except IOError as err:
+            # see https://github.com/PyCQA/pylint/issues/165
+            # pylint: disable=unpacking-non-sequence
             errno, strerror = err
             print('I/O Error({0}): {1}...skipping'.format(errno, strerror))
             return False
