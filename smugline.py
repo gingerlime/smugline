@@ -107,12 +107,13 @@ class SmugLine(object):
         return local_filename
 
     def set_file_timestamp(self, filename, image):
-        if filename is not None:
-          # apply the image date
-          image_info = self.get_image_info(image)
-          timestamp = time.strptime(image_info['Image']['Date'], '%Y-%m-%d %H:%M:%S')
-          t = time.mktime(timestamp)
-          os.utime(filename, (t, t))
+        if filename is None:
+            return
+        # apply the image date
+        image_info = self.get_image_info(image)
+        timestamp = time.strptime(image_info['Image']['Date'], '%Y-%m-%d %H:%M:%S')
+        t = time.mktime(timestamp)
+        os.utime(filename, (t, t))
 
     def upload_json(self, source_folder, json_file):
         images = json.load(open(json_file))
