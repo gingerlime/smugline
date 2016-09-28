@@ -5,6 +5,6 @@ python:
   - 3.4
   - pypy
 install:
-  - pip install pylint -r requirements.txt --use-mirrors --allow-external argparse --allow-unverified argparse
+  - pip install pylint -r requirements.txt --allow-external argparse --allow-unverified argparse
 script:
   - pylint --errors-only --additional-builtins=raw_input smugline.py
