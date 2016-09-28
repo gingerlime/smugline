@@ -214,7 +214,7 @@ class SmugLine(object):
         print('available albums:')
         for album in self.get_albums()['Albums']:
             if album['Title']:
-                print(album['Title'])
+                print(album['Title'].encode('utf-8'))
 
     def get_or_create_album(self, album_name):
         album = self.get_album_by_name(album_name)
