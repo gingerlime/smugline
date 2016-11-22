@@ -60,6 +60,12 @@ import requests
 import time
 from itertools import groupby
 
+# Python 3 vs 2
+try:
+    from urllib.error import HTTPError
+except:
+    from urllib2 import HTTPError
+
 __version__ = '0.6.0'
 
 IMG_FILTER = re.compile(r'.+\.(jpg|png|jpeg|tif|tiff|gif)$', re.IGNORECASE)
@@ -89,7 +95,14 @@ class SmugLine(object):
             return ALL_FILTER
 
     def upload_file(self, album, image):
-        self.smugmug.images_upload(AlbumID=album['id'], **image)
+        retries = 5
+        while retries:
+            try:
+                self.smugmug.images_upload(AlbumID=album['id'], **image)
+                return
+            except HTTPError:
+                print("retry ", image)
+                retries -= 1
 
     # source: http://stackoverflow.com/a/16696317/305019
     def download_file(self, url, folder, filename=None):
