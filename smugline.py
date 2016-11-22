@@ -101,7 +101,7 @@ class SmugLine(object):
                 self.smugmug.images_upload(AlbumID=album['id'], **image)
                 return
             except HTTPError:
-                print("RETRY ", image)
+                print("retry ", image)
                 retries -= 1
 
     # source: http://stackoverflow.com/a/16696317/305019
