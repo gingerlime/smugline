@@ -11,7 +11,7 @@ Written in python 2.x/3.x
 ## API Key
 
 You must have a smugmug account and [apply for an API key](http://www.smugmug.com/hack/apikeys).
-Once you apply, the API key will be visible on your account settings -> Discovery -> API keys.
+Once you apply, the API key will be visible on your account settings -> Me -> API keys.
 You only need the `Key` (no need for the `Secret`).
 
 ## Features
