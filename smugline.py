@@ -168,6 +168,9 @@ class SmugLine(object):
     def _download(self, images, dest_folder):
         for img in images:
             print('downloading {0} -> {1}'.format(img['FileName'], dest_folder))
+            if 'OriginalURL' not in img:
+                print('no permission to download {0}...skipping'.format(img['FileName']))
+                continue
             filename = self.download_file(img['OriginalURL'], dest_folder, img['FileName'])
             self.set_file_timestamp(filename, img)
 
