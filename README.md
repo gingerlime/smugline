@@ -3,6 +3,10 @@
 a simple command line tool for smugmug (using [smugpy](https://github.com/chrishoffman/smugpy)).
 Written in python 2.x/3.x
 
+## Important Note:
+
+Currently broken. Unfortunately [smugpy](https://github.com/chrishoffman/smugpy) looks abandoned, and since June 11, 2018, SmugMug API only accepts SSL connections (which smugpy doesn't support). Any volunteers to fork or upgrade smugpy or build the API v2 binding (or to take over the project), please get in touch.
+
 ## Installation
 
 * `git clone` the repository from github
