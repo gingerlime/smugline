@@ -1,3 +1,7 @@
+# no longer maintained
+
+For more information read this [open letter to SmugMug](https://blog.gingerlime.com/2018/an-open-letter-to-smugmug/).
+
 # smugline [![Build Status](https://secure.travis-ci.org/gingerlime/smugline.png?branch=master)](http://travis-ci.org/gingerlime/smugline)
 
 a simple command line tool for smugmug (using [smugpy](https://github.com/chrishoffman/smugpy)).
