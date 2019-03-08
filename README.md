@@ -1,4 +1,4 @@
-# no longer maintained
+# Broken. No longer maintained
 
 For more information read this [open letter to SmugMug](https://blog.gingerlime.com/2018/an-open-letter-to-smugmug/).
 
